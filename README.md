@@ -9,7 +9,7 @@ A bot joins a Google Meet / Teams / Zoom call, transcribes it, and produces a su
 | Backend | FastAPI | Async, Pydantic validation, auto docs at `/docs` |
 | DB | SQLite by default, PostgreSQL via `DATABASE_URL` | Zero-setup for reviewers; relational data (meetings → segments/decisions/action items) |
 | Bot | Recall.ai | Handles joining Meet/Teams/Zoom; building this from scratch is fragile |
-| Summaries | Claude API | Returns JSON that is validated before saving |
+| Summaries | Gemini API (free tier; Claude optional) | Returns JSON that is validated before saving |
 | Tests | pytest | Recall and Claude are mocked; covers parsing, webhook flow, paste flow, bad input |
 
 ## Flow
@@ -34,7 +34,7 @@ Fallback: `POST /meetings/paste` runs steps 3–4 on a pasted transcript, so the
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env        # add RECALL_API_KEY and ANTHROPIC_API_KEY
+cp .env.example .env        # add RECALL_API_KEY and GEMINI_API_KEY (free, from aistudio.google.com)
 uvicorn app.main:app --reload   # http://localhost:8000/docs
 
 cd ../frontend && npm install && npm run dev   # http://localhost:5173
@@ -45,3 +45,9 @@ Tests: `cd backend && pytest`
 
 ## Trade-offs / next steps
 Background tasks are in-process; a queue (Celery/RQ) would survive restarts. Chunk very long transcripts before summarizing. Add auth and per-user meetings. Verify Recall's webhook signature instead of a shared token.
+
+## AI provider
+Summaries run through `LLM_PROVIDER` in `.env`:
+- `gemini` (default): free Google AI Studio key, no credit card
+- `claude`: paid Anthropic API
+- `demo`: no key, simple rule-based summary for offline demos
