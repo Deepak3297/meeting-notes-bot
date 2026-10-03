@@ -1,4 +1,6 @@
 import os
+if os.path.exists("test.db"):
+    os.remove("test.db")
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 from fastapi.testclient import TestClient
 from app.main import app
@@ -24,6 +26,7 @@ def test_paste_flow_creates_ready_report(monkeypatch):
 
 
 def test_webhook_flow(monkeypatch):
+    monkeypatch.delenv("WEBHOOK_TOKEN", raising=False)
     monkeypatch.setattr(recall, "create_bot", lambda url: "bot-1")
     monkeypatch.setattr(recall, "fetch_transcript", lambda b: SEGS)
     monkeypatch.setattr(summarizer, "summarize", lambda s: FAKE)
